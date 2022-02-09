@@ -6,7 +6,8 @@ const messages = [
     "fix it!!!!",
     "mad because bad.",
     "remain upset.",
-    "you are sooo irate."
+    "you are sooo irate.",
+    "cry about it."
 ]
 
 // Returns a random message from messages
