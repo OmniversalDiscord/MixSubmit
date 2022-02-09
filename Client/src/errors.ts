@@ -1,4 +1,4 @@
-// Collection of in jokes
+// Collection of in-jokes
 const messages = [
     "i am inside your walls.",
     "i am rapidly approaching your location.",
