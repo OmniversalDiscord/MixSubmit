@@ -6,7 +6,7 @@ import { useParams } from "react-router-dom";
 
 function App() {
   const [error, setError] = useState<string | null>(null);
-  const [errorShake, setErrorShake] = useState<boolean>(true);
+  const [errorShake, setErrorShake] = useState<boolean>(false);
 
   const { mixId } = useParams();
 
