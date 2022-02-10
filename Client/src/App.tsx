@@ -2,20 +2,28 @@ import { useRef, useState, useCallback, useEffect } from "react";
 import { getErrorMessage } from "./errors";
 
 import { useDropzone } from "react-dropzone";
+import { useParams } from "react-router-dom";
 
 function App() {
   const [error, setError] = useState<string | null>(null);
   const [errorShake, setErrorShake] = useState<boolean>(true);
 
+  const { mixId } = useParams();
+
+  const showError = (error: string) => {
+    setError(`error: ${error}. ${getErrorMessage()}`);
+    setErrorShake(true);
+  };
+
   const onDrop = useCallback((acceptedFiles, rejectedFiles) => {
     // If there are any rejected files, an invalid file was dropped.
     if (rejectedFiles.length > 0) {
-      setError(`error: file must be an mp3. ${getErrorMessage()}`);
-      setErrorShake(true);
+      showError("file must be an mp3");
       return;
-    } else if (acceptedFiles.length > 1) {
-      setError(`error: more than one file was selected. ${getErrorMessage()}`);
-      setErrorShake(true);
+    }
+
+    if (acceptedFiles.length > 1) {
+      showError("only one file can be uploaded");
       return;
     }
 
@@ -29,7 +37,7 @@ function App() {
     accept: "audio/mpeg",
   });
 
-  // Disable the shake animation after 0.5 seconds
+  // Disable the shake animation after 100 ms
   useEffect(() => {
     if (errorShake) {
       const timer = setTimeout(() => {
