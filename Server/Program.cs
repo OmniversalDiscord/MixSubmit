@@ -10,7 +10,7 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<SetContext>(options =>
-    options.UseSqlite("Filename=:memory:"));
+    options.UseSqlite("Filename=Sets.db"));
 
 var app = builder.Build();
 
