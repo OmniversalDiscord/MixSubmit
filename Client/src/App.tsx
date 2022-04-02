@@ -4,6 +4,10 @@ import { getErrorMessage } from "./errors";
 import { useDropzone } from "react-dropzone";
 import { useParams } from "react-router-dom";
 
+import bg from '../assets/bg.jpg';
+import note from '../assets/music-solid.svg';
+import logo from '../assets/omni.png';
+
 function App() {
   const [error, setError] = useState<string | null>(null);
   const [errorShake, setErrorShake] = useState<boolean>(false);
@@ -48,33 +52,34 @@ function App() {
   }, [errorShake]);
 
   return (
-    <div
-      className="w-screen h-screen p-8"
-      style={{ backgroundColor: "#222831" }}
-    >
+    <>
       <div
-        className="drop-zone border-white border-opacity-50 rounded-xl border-2 w-full h-full flex items-center justify-center cursor-pointer"
-        {...getRootProps()}
+        className="w-screen h-screen bg-cover bg-center bg-no-repeat fixed"
+        style={{ backgroundImage: `url(${bg})` }}
       >
-        <div
-          className={`flex flex-col items-center space-y-2 select-none ${
-            errorShake && "shake-horizontal shake-constant"
-          }`}
-        >
-          <h1 className="text-white text-5xl opacity-90 font-bold">
-            submit your mix
-          </h1>
-          <h2 className="text-white text-xl opacity-50">
-            drag an mp3 here or click to upload
-          </h2>
+      </div>
+      <div className="fixed px-4 py-4 flex items-center space-x-4">
+        <img src={logo} className="h-6" />
+      </div>
+      <div className="w-screen h-screen flex items-center justify-center">
+        <div className="bg-white rounded-xl flex flex-col p-3 drop-shadow-xl">
+          <div
+            className="drop-zone cursor-pointer w-72 h-72 border-2 rounded-lg border-black border-opacity-30 flex items-center justify-center flex-col"
+            {...getRootProps()}>
 
-          {error != null && (
-            <h2 className="text-red-500 text-xl opacity-70">{error}</h2>
-          )}
+            <img src={note} className="w-16 h-16 opacity-30" />
+
+            <h1 className="text-xl font-extrabold text-black opacity-70 mt-4">
+              Upload your mix
+            </h1>
+            <h2 className="text-sm opacity-40 font-medium">
+              Drop an mp3 or click to upload
+            </h2>
+          </div>
+          <input {...getInputProps()} accept=".mp3" />
         </div>
       </div>
-      <input {...getInputProps()} accept=".mp3" />
-    </div>
+    </>
   );
 }
 
