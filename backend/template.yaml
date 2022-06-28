@@ -3,37 +3,75 @@ Transform: AWS::Serverless-2016-10-31
 Description: >
   Sample SAM Template for MixSubmit
 
+Parameters:
+  StageName:
+    Type: String
+    Default: dev
+    Description: (Required) Enter dev, prod. Default is dev.
+    AllowedValues:
+      - dev
+      - prod
+  MixBucketName:
+    Type: String
+    Default: omni-mixes
+    Description: (Required) Enter the bucket name. Default is omni-mixes
+    AllowedPattern: ^[a-z0-9-]+$
+
 # More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
 Globals:
   Function:
+    Runtime: dotnet6
+    Architectures:
+      - x86_64
+    CodeUri: ./src/MixSubmit
     Timeout: 10
 
 Resources:
+  MixSubmitApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: !Ref StageName
+      Cors:
+        AllowMethods: "'GET,POST'"
+        AllowHeaders: "'content-type'"
+        AllowOrigin: "'*'"
+  
+  MixBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Ref MixBucketName
+      CorsConfiguration:
+        CorsRules:
+          - AllowedMethods:
+              - GET
+              - PUT
+            AllowedOrigins:
+              - '*'
+            ExposedHeaders:
+              - Date
+  
   MixSubmitFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
-      CodeUri: ./src/MixSubmit/
       Handler: MixSubmit::MixSubmit.Function::functionHandler
-      Runtime: dotnet6
-      Architectures:
-        - x86_64
-      Environment: # More info about Env Vars: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#environment-object
+      Policies:
+        - S3FullAccessPolicy:
+            BucketName: !Ref MixBucketName
+      Environment:
         Variables:
-          PARAM1: VALUE
+          BUCKET: !Ref MixBucketName
       Events:
         MixSubmit:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
-            Path: /hello/{name}
+            Path: /hello
             Method: get
+            RestApiId: !Ref MixSubmitApi
 
 Outputs:
-  # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
-  # Find out more about other implicit resources you can reference within SAM
-  # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
   MixSubmitApi:
     Description: "API Gateway endpoint URL for Prod stage for Hello World function"
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello/"
+    Value: !Sub "https://${MixSubmitApi}.execute-api.${AWS::Region}.amazonaws.com/${StageName}/"
   MixSubmitFunction:
     Description: "Hello World Lambda Function ARN"
     Value: !GetAtt MixSubmitFunction.Arn

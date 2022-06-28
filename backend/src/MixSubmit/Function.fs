@@ -1,8 +1,14 @@
 namespace MixSubmit
 
+open System
+open System.IO
 open System.Net.Http
+open System.Text
+open Amazon
 open Amazon.Lambda.Core
 open Amazon.Lambda.APIGatewayEvents
+open Amazon.S3
+open Amazon.S3.Transfer
 open Newtonsoft.Json
 
 [<assembly: LambdaSerializer(typeof<Amazon.Lambda.Serialization.Json.JsonSerializer>)>]
@@ -10,36 +16,31 @@ open Newtonsoft.Json
 do ()
 
 module Function =
-    let private client = new HttpClient()
 
-    let private getCallingIp () =
-        client.DefaultRequestHeaders.Accept.Clear()
-        client.DefaultRequestHeaders.Add("User-Agent", "AWS Lambda .Net Client")
+    let functionHandler (_: APIGatewayProxyRequest, context: ILambdaContext) =
+        let client = new AmazonS3Client()
+
+        let stream = new MemoryStream()
+
+        let bucketName =
+            Environment.GetEnvironmentVariable("BUCKET")
+
+        // Write dummy text to the stream
+        stream.Write(Encoding.UTF8.GetBytes("Hello World!"))
+
+        let uploadRequest =
+            TransferUtilityUploadRequest(
+                InputStream = stream,
+                Key = "test.txt",
+                BucketName = bucketName,
+                CannedACL = S3CannedACL.PublicRead
+            )
+
+        let fileTransferUtility =
+            new TransferUtility(client)
 
         task {
-            let! msg =
-                client
-                    .GetStringAsync("http://checkip.amazonaws.com/")
-                    .ConfigureAwait(false)
+            do! fileTransferUtility.UploadAsync(uploadRequest)
 
-            return msg.Replace("\n", "")
-        }
-
-    let functionHandler (apigProxyEvent: APIGatewayProxyRequest, context: ILambdaContext) =
-        task {
-            let! location = getCallingIp ()
-            
-            let name = apigProxyEvent.PathParameters["name"]
-            
-            let body =
-                dict
-                    [ "message", $"hello {name}!"
-                      "location", location ]
-
-            return
-                APIGatewayProxyResponse(
-                    Body = JsonConvert.SerializeObject(body),
-                    StatusCode = 200,
-                    Headers = dict [ "Content-Type", "application/json" ]
-                )
+            return APIGatewayProxyResponse(StatusCode = 200, Body = "Uploaded!")
         }

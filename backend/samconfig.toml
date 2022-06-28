@@ -1,0 +1,12 @@
+version = 0.1
+[default]
+[default.deploy]
+[default.deploy.parameters]
+stack_name = "MixSubmit"
+s3_bucket = "aws-sam-cli-managed-default-samclisourcebucket-5no7qycu3a91"
+s3_prefix = "MixSubmit"
+region = "us-east-1"
+confirm_changeset = true
+capabilities = "CAPABILITY_IAM"
+parameter_overrides = "StageName=\"dev\" MixBucketName=\"omni-mixes\""
+image_repositories = []
